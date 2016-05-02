@@ -100,13 +100,17 @@ var model = {
 			return "draw";
 		}
 		console.log("no winner");
-		return false; // no winner or draw
+		return ''; // no winner or draw
 	},
 	
 	
 	
 	getSquare: function(r, c) {
 		return (this.board[r][c]);
+	},
+	
+	isGameOver: function(){
+		return (this.isDraw() || this.checkWin() !== '');
 	},
 
 	copy: function(){
@@ -157,59 +161,82 @@ game.makeMove(2,0);
 
 game.makeMove(0,1);
 game.makeMove(0,2);
-game.makeMove(2,1);
+//game.makeMove(2,1);
 
-game.checkWin();
-//game.playerWin();
+console.log(game.isGameOver());
 console.log(game);
 game.printBoard();
 
 
-
-
-function View()
+function getBestOutcome(boardPosition, isMaximizingPlayer)
 {
-
-}
-
-var view = {
-	constructor: View,
-
-	updateView: function(model){
-		for(var i = 0; i < model.row; i++)
-		{
-			for(var j = 0; j < model.column; j++)
-			{
-				
-			}
-		}
+	var bestOutcome;
+	
+	if (isMaximizingPlayer)
+	{
+		bestOutcome = {
+			row: 0,
+			column: 0,
+			point: 1
+		};
 	}
-};
-
-
-View.prototype = view;
-
-function Controller()
-{
-
-}
-
-var controller = {
-	constructor: Controller;
-};
-
-Controller.prototype = controller;
-
-
-
-
-function eventDispatcher(listener,listening)
-{ 
-
-}
-
-M = new Model(3,3);
-M.makeMove(1,1,'X');
-var v = new View(m, function(row,col,tdcell){
-
-});
+	else
+	{
+		bestOutcome = {
+			row: 0,
+			column: 0,
+			point: -1
+		};
+	}
+	
+	if(boardPosition.checkWin() === "draw")
+	{
+		bestOutcome.point = 0;
+		return bestOutcome.point;
+	}
+	if(boardPosition.checkWin() === 'X')
+	{
+		bestOutcome.point = 1;
+		return 1;
+	}
+	if(boardPosition.checkWin()=== 'O')
+	{
+		bestOutcome.point = -1;
+		return bestOutcome.point;
+	}
+	
+	
+	for (var i = 0; i < boardPosition.row; i++)
+	{
+		for (var j = 0; boardPosition.column; j++)
+		{
+			// some type of recusion
+			var currentBoard = boardPosition.copy();
+			
+			currentBoard.makeMove(i,j);
+			
+			if (isMaximizingPlayer)
+			{
+				var currentMove = getBestOutcome(currentBoard, false);
+				
+				if (currentMove.point > bestOutcome.point)
+				{
+					bestOutcome = currentMove;
+				} // if (currentMove.point > bestOutcome.point)
+			} // if (isMaximizingPlayer)
+			else
+			{
+				var currentMove = getBestOutcome(currentBoard, true);
+				
+				if (currentMove.point < bestOutcome.point)
+				{
+					bestOutcome = currentMove;
+				} // if (currentMove.point < bestOutcome.point)
+			} // else
+			
+		} // for (var j = 0; boardPosition.column; j++)
+	} // for (var i = 0; i < boardPosition.row; i++)
+	
+	return bestOutcome;
+	
+} // getBestOutcome
