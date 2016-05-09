@@ -24,7 +24,7 @@ var model = {
 			this.board[i] = [];
 			for(var j = 0; j < this.column; j++)
 			{
-				this.board[i][j] = '';
+				this.board[i][j] = ' ';
 			}
 		}
 	},
@@ -45,7 +45,7 @@ var model = {
 	
 	isValidMove: function(r,c){
 		
-		if(this.board[r][c] === '')
+		if(this.board[r][c] === ' ')
 		{
 			return true;
 		}
@@ -58,7 +58,7 @@ var model = {
 		{
 			for(var j = 0; j <this.column; j++)
 			{
-				if(this.board[i][j] === '')
+				if(this.board[i][j] === ' ')
 				{
 					return false;
 				}
@@ -72,7 +72,7 @@ var model = {
 		
 		if((this.board[0][0] === this.board[1][1] && this.board[0][0] === this.board[2][2]) || (this.board[0][2] === this.board[1][1] && this.board[0][2] === this.board[2][0]))
 		{
-			console.log(this.getSquare(1,1)+" wins diagonal");
+			//console.log(this.getSquare(1,1)+" wins diagonal");
 			return this.getSquare(1,1);
 		} // diagonal test
 		
@@ -80,7 +80,7 @@ var model = {
 		{
 			if(this.board[ii][0] === this.board[ii][1] && this.board[ii][1] === this.board[ii][2])
 			{
-				console.log(this.getSquare(ii,0)+" wins horizontal");
+				//console.log(this.getSquare(ii,0)+" wins horizontal");
 				return this.getSquare(ii,0);
 			}
 		} // horizontal test
@@ -89,17 +89,17 @@ var model = {
 		{
 			if(this.board[0][jj] === this.board[1][jj] && this.board[0][jj] === this.board[2][jj])
 			{
-				console.log(this.getSquare(0,jj)+" wins vertical");
+				//console.log(this.getSquare(0,jj)+" wins vertical");
 				return this.getSquare(0,jj);
 			}
 		} // vertical test
 		
 		if(this.isDraw())
 		{
-			console.log("draw");
+			//console.log("draw");
 			return "draw";
 		}
-		console.log("no winner");
+		//console.log("no winner");
 		return ''; // no winner or draw
 	},
 	
@@ -145,98 +145,160 @@ var game = new Model(3,3);
 
 game.newGame();
 
-game.makeMove(2,2);
-
-game.makeMove(1,1);
-
 game.makeMove(0,0);
+game.printBoard();console.log();
 
-game.makeMove(1,2);
+game.makeMove(getBestOutcome(game, false).row,getBestOutcome(game, false).column);
+game.printBoard();console.log();
+
+game.makeMove(2,2);
+game.printBoard();console.log();
+
+game.makeMove(getBestOutcome(game, false).row,getBestOutcome(game, false).column);
+game.printBoard();console.log();
+
+game.makeMove(2,1);
+game.printBoard();console.log();
+
+game.makeMove(getBestOutcome(game, false).row,getBestOutcome(game, false).column);
+game.printBoard();console.log();
+
+game.makeMove(0,2);
+game.printBoard();console.log();
+
+game.makeMove(getBestOutcome(game, false).row,getBestOutcome(game, false).column);
+game.printBoard();console.log();
 
 game.makeMove(1,0);
+game.printBoard();console.log();
 
-game.makeMove(2,0);
-
-
-
-game.makeMove(0,1);
-game.makeMove(0,2);
-//game.makeMove(2,1);
-
-console.log(game.isGameOver());
+console.log();
 console.log(game);
 game.printBoard();
 
 
 function getBestOutcome(boardPosition, isMaximizingPlayer)
 {
+	//console.log(boardPosition.turn +"'s turn");
 	var bestOutcome;
-	
+	var currentMove;
+									//console.log('enter');
 	if (isMaximizingPlayer)
 	{
+		//console.log("maximizing");
 		bestOutcome = {
 			row: 0,
 			column: 0,
-			point: 1
+			point: -Infinity
 		};
-	}
+		
+		currentMove = {
+			row: 0,
+			column: 0,
+			point: -Infinity
+		};
+	} 
 	else
 	{
+		//console.log('not maximizing');
 		bestOutcome = {
 			row: 0,
 			column: 0,
-			point: -1
+			point: Infinity
+		};
+		
+		currentMove = {
+			row: 0,
+			column: 0,
+			point: Infinity
 		};
 	}
-	
+
 	if(boardPosition.checkWin() === "draw")
 	{
+		//console.log('draw');
+
 		bestOutcome.point = 0;
-		return bestOutcome.point;
+		return bestOutcome;
 	}
 	if(boardPosition.checkWin() === 'X')
 	{
+		//console.log('win');
+
 		bestOutcome.point = 1;
-		return 1;
+		//console.log(bestOutcome);
+		return bestOutcome;
 	}
-	if(boardPosition.checkWin()=== 'O')
+	if(boardPosition.checkWin() === 'O')
 	{
+		//console.log('loss');
+
 		bestOutcome.point = -1;
-		return bestOutcome.point;
+		//console.log(bestOutcome);
+		return bestOutcome;
 	}
-	
 	
 	for (var i = 0; i < boardPosition.row; i++)
 	{
-		for (var j = 0; boardPosition.column; j++)
+		for (var j = 0; j < boardPosition.column; j++)
 		{
-			// some type of recusion
-			var currentBoard = boardPosition.copy();
-			
-			currentBoard.makeMove(i,j);
-			
-			if (isMaximizingPlayer)
+			var currentBoard = boardPosition.copy(); // copies board
+
+			if(currentBoard.isValidMove(i,j))  // only exicutes for valid moves
 			{
-				var currentMove = getBestOutcome(currentBoard, false);
+				//console.log("row: "+ (i)+" column: "+(j)+' valid move');
+	
+				currentBoard.makeMove(i,j); // Makes move on copied board
 				
-				if (currentMove.point > bestOutcome.point)
-				{
-					bestOutcome = currentMove;
-				} // if (currentMove.point > bestOutcome.point)
-			} // if (isMaximizingPlayer)
-			else
-			{
-				var currentMove = getBestOutcome(currentBoard, true);
+				//currentBoard.printBoard();
 				
-				if (currentMove.point < bestOutcome.point)
+				if (isMaximizingPlayer)
 				{
-					bestOutcome = currentMove;
-				} // if (currentMove.point < bestOutcome.point)
-			} // else
-			
+					currentMove = getBestOutcome(currentBoard, false); // recursive step for maximizing
+					
+					if (currentMove.point > bestOutcome.point)
+					{
+						
+						currentMove.row = i;
+						currentMove.column = j;
+						bestOutcome = currentMove;
+						//console.log("new value for maximizing");console.log(currentMove);
+						
+					} // if (currentMove.point > bestOutcome.point)
+				} // if (isMaximizingPlayer)
+				else
+				{
+					currentMove = getBestOutcome(currentBoard, true); // recursive step for nonMaximizing
+					
+					if (currentMove.point < bestOutcome.point)
+					{
+						
+						currentMove.row = i;
+						currentMove.column = j;
+						bestOutcome = currentMove;
+						//console.log("new value for non-maximizing");console.log(currentMove);
+					} // if (currentMove.point < bestOutcome.point)
+				} // else
+			} // if(currentBoard.isValidMove(i,j))
 		} // for (var j = 0; boardPosition.column; j++)
 	} // for (var i = 0; i < boardPosition.row; i++)
+	//console.log(bestOutcome);
 	
 	return bestOutcome;
-	
 } // getBestOutcome
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
